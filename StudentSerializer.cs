@@ -7,13 +7,14 @@ public class StudentSerializer
 {
     private Student tempStudent = null;
     public List<Student> studentList = [];
-    private const string directoryPath = @"C:\MSSA_Output\";
+    private string DirectoryPath;
     JsonSerializerOptions jsonOptions;
 
-    public StudentSerializer()
+    public StudentSerializer(string directoryPath)
     {
         tempStudent = null;
         studentList = [];
+        DirectoryPath = directoryPath;
         jsonOptions = new()
         {
             IncludeFields = true,
@@ -38,7 +39,7 @@ public class StudentSerializer
     public void jsonSerialize(int index)
     {
         Student student = studentList[index];
-        string filePath = directoryPath + $"{student.Id}.json";
+        string filePath = DirectoryPath + $"{student.Id}.json";
 
         JsonSerializerOptions options = new()
         {
@@ -55,9 +56,18 @@ public class StudentSerializer
         Console.WriteLine($"{filePath} created.");
     }
 
+    public void jsonSerializeMulti(int index1, int index2)
+    {
+        if (index2 < index1) { return; }
+        for (int i = index1; i <= index2; i++)
+        {
+            jsonSerialize(i);
+        }
+    }
+
     public Student jsonDeserialize(string fileName)
     {
-        string filePath=directoryPath+fileName;
+        string filePath=DirectoryPath+fileName;
         if (!File.Exists(filePath))
         {
             Console.WriteLine($"{filePath} not found.");
@@ -77,10 +87,26 @@ public class StudentSerializer
         return student;
     }
 
+    public List<Student> jsonDeserializeAll()
+    {
+        List<Student> students = new List<Student>();
+        DirectoryInfo directory = new DirectoryInfo(DirectoryPath);
+        
+        foreach(var fileInfo in directory.GetFiles())
+        {
+            string fileName = fileInfo.Name;
+            if (fileName.EndsWith(".json"))
+            {
+                students.Add(jsonDeserialize(fileName));
+            }
+        }
+        return students;
+    }
+
     public void xmlSerialize(int index)
     {
         Student student = studentList[index];
-        string filePath = directoryPath + $"{student.Id}.xml";
+        string filePath = DirectoryPath + $"{student.Id}.xml";
 
         // write XML
         if (File.Exists(filePath)) { File.Delete(filePath); }
@@ -104,9 +130,18 @@ public class StudentSerializer
         Console.WriteLine($"{filePath} created.");
     }
 
+    public void xmlSerializeMulti(int index1, int index2)
+    {
+        if (index2 < index1) { return; }
+        for (int i = index1; i <= index2; i++)
+        {
+            xmlSerialize(i);
+        }
+    }
+
     public Student xmlDeserialize(string fileName)
     {
-        string filePath = directoryPath + fileName;
+        string filePath = DirectoryPath + fileName;
         if (!File.Exists(filePath))
         {
             Console.WriteLine($"{filePath} not found.");
@@ -126,4 +161,21 @@ public class StudentSerializer
         Console.WriteLine($"{filePath} successfully deserialized.");
         return student;
     }
+
+    public List<Student> xmlDeserializeAll()
+    {
+        List<Student> students = new List<Student>();
+        DirectoryInfo directory = new DirectoryInfo(DirectoryPath);
+
+        foreach (var fileInfo in directory.GetFiles())
+        {
+            string fileName = fileInfo.Name;
+            if (fileName.EndsWith(".xml"))
+            {
+                students.Add(xmlDeserialize(fileName));
+            }
+        }
+        return students;
+    }
+
 }
